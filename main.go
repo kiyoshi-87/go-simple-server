@@ -3,34 +3,29 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	r := mux.NewRouter()
+	r := gin.Default()
+
 	fmt.Println("Server running on port 8000!")
 
-	// Serve static files for each route
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	r.PathPrefix("/js/").Handler(http.StripPrefix("/js/", http.FileServer(http.Dir("static/js"))))
-	r.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("static/css"))))
-	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir("static/images"))))
-	r.PathPrefix("/fonts/").Handler(http.StripPrefix("/fonts/", http.FileServer(http.Dir("static/fonts"))))
-	r.PathPrefix("/videos/").Handler(http.StripPrefix("/videos/", http.FileServer(http.Dir("static/videos"))))
+	// Serve static files
+	r.Static("/static", "./static")
 
 	// Handling the routes
-	r.HandleFunc("/", RootRoute).Methods("GET")
-	r.HandleFunc("/reservation", ReservationRoute).Methods("GET")
+	r.GET("/", RootRoute)
+	r.GET("/reservation", ReservationRoute)
 
-	log.Fatal(http.ListenAndServe(":8000", r))
+	log.Fatal(r.Run(":8000"))
 }
 
-func RootRoute(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./static/index.html")
+func RootRoute(c *gin.Context) {
+	c.File("./static/index.html")
 }
 
-func ReservationRoute(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./static/reservation.html")
+func ReservationRoute(c *gin.Context) {
+	c.File("./static/reservation.html")
 }
